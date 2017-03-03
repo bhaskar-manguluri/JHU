@@ -1,0 +1,508 @@
+---
+title: "JHU4"
+author: "bhaskar"
+output: html_document
+---
+
+*Exploratory graphs*
+1. univariate
+2. bi variate
+3. multivariate
+
+Exploratory statistics
+1. Five number summary
+2. variance
+3. covariance correlation
+4. quantiles
+
+Exploratory graphing system
+1. base
+```{r}
+library(datasets)
+head(airquality)
+hist(airquality$Ozone)
+boxplot((airquality$Ozone))
+with(airquality,plot(Wind,Ozone))
+airquality = transform(airquality,Month=as.factor(Month))
+boxplot(Ozone~Month,airquality,xlab="Month",ylab="Ozone")
+```
+
+
+
+
+**important params** *pch,lwd,lty,col,xlab,ylab*
+**important par() params** *mar,mfow,mfcol,oma,bg,las*
+*plot,lines,points,title,mtext,text,axis*
+
+### **base**
+
+```{r}
+with(airquality, plot(Wind, Ozone, main = "Ozone and Wind in New York City", 
+    type = "n"))
+with(subset(airquality, Month == 5), points(Wind, Ozone, col = "blue"))
+with(subset(airquality, Month != 5), points(Wind, Ozone, col = "red"))
+legend("topright", pch = 1, col = c("blue", "red"), legend = c("May", "Other Months"))
+with(airquality, plot(Wind, Ozone, main = "Ozone and Wind in New York City", 
+    pch = 20))
+model <- lm(Ozone ~ Wind, airquality)
+abline(model, lwd = 2)
+```
+
+
+**multiple plots**
+```{r}
+par(mfrow = c(1, 2))
+with(airquality, {
+    plot(Wind, Ozone, main = "Ozone and Wind")
+    plot(Solar.R, Ozone, main = "Ozone and Solar Radiation")
+})
+par(mfrow = c(1, 3), mar = c(4, 4, 2, 1), oma = c(0, 0, 2, 0))
+with(airquality, {
+    plot(Wind, Ozone, main = "Ozone and Wind")
+    plot(Solar.R, Ozone, main = "Ozone and Solar Radiation")
+    plot(Temp, Ozone, main = "Ozone and Temperature")
+    mtext("Ozone and Weather in New York City", outer = TRUE)
+})
+```
+
+
+2. Lattice
+```{r}
+library(lattice)
+xyplot(Ozone ~ Wind | Month, data = airquality, layout = c(5, 1))
+
+```
+
+3. ggplot2
+
+## qplot
+
+```{r}
+library(ggplot2)
+str(mpg)
+```
+
+**scatter plots**
+
+```{r}
+qplot(displ, hwy, data = mpg)
+qplot(displ, hwy, data = mpg, color = drv)
+qplot(displ, hwy, data = mpg, geom = c("point", "smooth"))
+```
+
+** histogram **
+```{r}
+qplot(hwy, data = mpg, fill = drv)
+```
+
+**facets**
+```{r}
+qplot(displ, hwy, data = mpg, facets = . ~ drv)
+qplot(hwy, data = mpg, facets = drv ~ ., binwidth = 2)
+```
+
+## GGPLOT2 GRAMMER
+- A data frame
+- aesthetic mappings: how data are mapped to color, size
+- geoms: geometric objects like points, lines, shapes.
+- facets: for conditional plots.
+- stats: statistical transformations like binning, quantiles, smoothing.
+- scales: what scale an aesthetic map uses (example: male = red, female = blue).
+- coordinate system
+
+## Clustering
+
+```{r}
+set.seed(1234)
+par(mar = c(0, 0, 0, 0))
+x <- rnorm(12, mean = rep(1:3, each = 4), sd = 0.2)
+y <- rnorm(12, mean = rep(c(1, 2, 1), each = 4), sd = 0.2)
+plot(x, y, col = "blue", pch = 19, cex = 2)
+text(x + 0.05, y + 0.05, labels = as.character(1:12))
+
+```
+
+** hclust **
+
+** Distance or similarity for both hclust and kmeans**
+- Continuous - euclidean distance
+- Continous - correlation similarity
+- Binary - manhattan distance
+
+Pick a distance/similarity that makes sense for your problem
+
+```{r}
+dataFrame <- data.frame(x = x, y = y)
+distxy <- dist(dataFrame,method = "euclidian")
+hClustering <- hclust(distxy)
+plot(hClustering)
+```
+
+Gives an idea of the relationships between variables/observations
+The picture may be unstable
+- Change a few points
+- Have different missing values
+- Pick a different distance
+- Change the merging strategy
+- Change the scale of points for one variable
+
+But it is deterministic, Choosing where to cut isn't always obvious, Should be primarily used for exploration 
+
+## K-means
+
+```{r}
+set.seed(1234); par(mar=c(0,0,0,0))
+x <- rnorm(12,mean=rep(1:3,each=4),sd=0.2)
+y <- rnorm(12,mean=rep(c(1,2,1),each=4),sd=0.2)
+plot(x,y,col="blue",pch=19,cex=2)
+text(x+0.05,y+0.05,labels=as.character(1:12))
+```
+
+kmeans
+
+```{r}
+dataFrame <- data.frame(x,y)
+kmeansObj <- kmeans(dataFrame,centers=3)
+names(kmeansObj)
+
+```
+
+**plot**
+```{r}
+par(mar=rep(0.2,4))
+plot(x,y,col=kmeansObj$cluster,pch=19,cex=2)
+points(kmeansObj$centers,col=1:3,pch=3,cex=3,lwd=3)
+```
+
+### Heatmaps
+
+```{r}
+set.seed(1234)
+dataMatrix <- as.matrix(dataFrame)[sample(1:12),]
+kmeansObj <- kmeans(dataMatrix,centers=3)
+par(mfrow=c(1,2), mar = c(2, 4, 0.1, 0.1))
+image(t(dataMatrix)[,nrow(dataMatrix):1],yaxt="n")
+image(t(dataMatrix)[,order(kmeansObj$cluster)],yaxt="n")
+
+```
+
+# CASE STUDY
+
+# CLUSTERING
+
+```{r}
+load("~/mywork/JHU/data/samsungData.rda")
+names(samsungData)[1:12]
+head(samsungData$activity)
+str(samsungData$activity)
+table(samsungData$activity)
+```
+
+** plotting average acceleration for first subject**
+
+```{r}
+par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
+samsungData <- transform(samsungData, activity = factor(activity))
+sub1 <- subset(samsungData, subject == 1)
+plot(sub1[, 1], col = sub1$activity, ylab = names(sub1)[1])
+plot(sub1[, 2], col = sub1$activity, ylab = names(sub1)[2])
+legend("bottomright", legend = unique(sub1$activity), col = unique(sub1$activity), 
+    pch = 1)
+```
+
+## hclust
+
+** clustering based on average acceleration**
+```{r}
+par(mfrow = c(1,1))
+myplclust <- function(hclust, lab = hclust$labels, lab.col = rep(1, length(hclust$labels)), 
+    hang = 0.1, ...) {
+    ## modifiction of plclust for plotting hclust objects *in colour*!  Copyright
+    ## Eva KF Chan 2009 Arguments: hclust: hclust object lab: a character vector
+    ## of labels of the leaves of the tree lab.col: colour for the labels;
+    ## NA=default device foreground colour hang: as in hclust & plclust Side
+    ## effect: A display of hierarchical cluster with coloured leaf labels.
+    y <- rep(hclust$height, 2)
+    x <- as.numeric(hclust$merge)
+    y <- y[which(x < 0)]
+    x <- x[which(x < 0)]
+    x <- abs(x)
+    y <- y[order(x)]
+    x <- x[order(x)]
+    plot(hclust, labels = FALSE, hang = hang, ...)
+    text(x = x, y = y[hclust$order] - (max(hclust$height) * hang), labels = lab[hclust$order], 
+        col = lab.col[hclust$order], srt = 90, adj = c(1, 0.5), xpd = NA, ...)
+}
+distanceMatrix <- dist(sub1[, 1:3])
+hclustering <- hclust(distanceMatrix)
+myplclust(hclustering, lab.col = unclass(sub1$activity))
+```
+
+** plotting max acceleration **
+
+```{r}
+par(mfrow = c(1, 2))
+plot(sub1[, 10], pch = 19, col = sub1$activity, ylab = names(sub1)[10])
+plot(sub1[, 11], pch = 19, col = sub1$activity, ylab = names(sub1)[11])
+par(mfrow = c(1,1))
+```
+
+** clustering based on max acceleleration **
+
+```{r}
+distanceMatrix <- dist(sub1[, 10:12])
+hclustering <- hclust(distanceMatrix)
+myplclust(hclustering, lab.col = unclass(sub1$activity))
+```
+
+** singular value decomposition **
+
+```{r}
+svd1 = svd(scale(sub1[, -c(562, 563)]))
+par(mfrow = c(1, 2))
+plot(svd1$u[, 1], col = sub1$activity, pch = 19)
+plot(svd1$u[, 2], col = sub1$activity, pch = 19)
+
+```
+
+** finding maximum contributor**
+
+```{r}
+plot(svd1$v[, 2], pch = 19)
+```
+
+** clustering based on maximum contributor **
+
+```{r}
+maxContrib <- which.max(svd1$v[, 2])
+distanceMatrix <- dist(sub1[, c(10:12, maxContrib)])
+hclustering <- hclust(distanceMatrix)
+myplclust(hclustering, lab.col = unclass(sub1$activity))
+```
+
+** maximum contributor **
+
+```{r}
+names(samsungData)[maxContrib]
+```
+
+## Kmeans
+
+** nstart=1 first try **
+```{r}
+kClust <- kmeans(sub1[, -c(562, 563)], centers = 6)
+table(kClust$cluster, sub1$activity)
+```
+
+** nstart =1 second try **
+
+```{r}
+kClust <- kmeans(sub1[, -c(562, 563)], centers = 6, nstart = 1)
+table(kClust$cluster, sub1$activity)
+```
+
+** nstart 100 1st try **
+
+```{r}
+kClust <- kmeans(sub1[, -c(562, 563)], centers = 6, nstart = 100)
+table(kClust$cluster, sub1$activity)
+```
+
+** nstart 100 second try **
+
+```{r}
+kClust <- kmeans(sub1[, -c(562, 563)], centers = 6, nstart = 100)
+table(kClust$cluster, sub1$activity)
+```
+
+** cluster1 variable centering **
+
+```{r}
+plot(kClust$center[1, 1:10], pch = 19, ylab = "Cluster Center", xlab = "")
+```
+
+*** cluster2 variable centering **
+
+```{r}
+plot(kClust$center[4, 1:10], pch = 19, ylab = "Cluster Center", xlab = "")
+```
+
+# Air pollution
+
+## Has fine particle pollution in the U.S. decreased from 1999 to 2012?
+
+## Read in data from 1999
+```{r}
+pm0 <- read.table("~/mywork/JHU/data/RD_501_88101_1999-0.txt", comment.char = "#", header = FALSE, sep = "|", na.strings = "")
+dim(pm0)
+head(pm0)
+cnames <- readLines("~/mywork/JHU/data/RD_501_88101_1999-0.txt", 1)
+print(cnames)
+cnames <- strsplit(cnames, "|", fixed = TRUE)
+print(cnames)
+names(pm0) <- make.names(cnames[[1]])
+head(pm0)
+x0 <- pm0$Sample.Value
+class(x0)
+str(x0)
+summary(x0)
+mean(is.na(x0))
+```
+
+### Are missing values important here?
+
+## Read in data from 2012
+
+```{r}
+pm1 <- read.table("~/mywork/JHU/data/RD_501_88101_2012-0.txt", comment.char = "#", header = FALSE, sep = "|", na.strings = "", nrow = 1304290)
+names(pm1) <- make.names(cnames[[1]])
+head(pm1)
+dim(pm1)
+x1 <- pm1$Sample.Value
+class(x1)
+```
+
+### Five number summaries for both periods
+
+```{r}
+summary(x1)
+summary(x0)
+mean(is.na(x1))
+```
+
+### Are missing values important here?
+
+### Make a boxplot of both 1999 and 2012
+
+```{r}
+boxplot(x0, x1)
+boxplot(log10(x0), log10(x1))
+```
+
+
+
+### Check negative values in 'x1'
+```{r}
+summary(x1)
+negative <- x1 < 0
+sum(negative, na.rm = T)
+mean(negative, na.rm = T)
+dates <- pm1$Date
+str(dates)
+dates <- as.Date(as.character(dates), "%Y%m%d")
+str(dates)
+hist(dates, "month")
+```
+
+### Check what's going on in months 1--6
+
+
+### Plot a subset for one monitor at both times
+
+### Find a monitor for New York State that exists in both datasets
+```{r}
+site0 <- unique(subset(pm0, State.Code == 36, c(County.Code, Site.ID)))
+site1 <- unique(subset(pm1, State.Code == 36, c(County.Code, Site.ID)))
+site0 <- paste(site0[,1], site0[,2], sep = ".")
+site1 <- paste(site1[,1], site1[,2], sep = ".")
+str(site0)
+str(site1)
+both <- intersect(site0, site1)
+print(both)
+```
+
+### Find how many observations available at each monitor
+
+```{r}
+pm0$county.site <- with(pm0, paste(County.Code, Site.ID, sep = "."))
+pm1$county.site <- with(pm1, paste(County.Code, Site.ID, sep = "."))
+cnt0 <- subset(pm0, State.Code == 36 & county.site %in% both)
+cnt1 <- subset(pm1, State.Code == 36 & county.site %in% both)
+sapply(split(cnt0, cnt0$county.site), nrow)
+sapply(split(cnt1, cnt1$county.site), nrow)
+```
+
+### Choose county 63 and side ID 2008
+
+```{r}
+pm1sub <- subset(pm1, State.Code == 36 & County.Code == 63 & Site.ID == 2008)
+pm0sub <- subset(pm0, State.Code == 36 & County.Code == 63 & Site.ID == 2008)
+dim(pm1sub)
+dim(pm0sub)
+```
+
+### Plot data for 2012
+
+```{r}
+dates1 <- pm1sub$Date
+x1sub <- pm1sub$Sample.Value
+plot(dates1, x1sub)
+dates1 <- as.Date(as.character(dates1), "%Y%m%d")
+str(dates1)
+plot(dates1, x1sub)
+```
+
+### Plot data for 1999
+
+```{r}
+dates0 <- pm0sub$Date
+dates0 <- as.Date(as.character(dates0), "%Y%m%d")
+x0sub <- pm0sub$Sample.Value
+plot(dates0, x0sub)
+```
+
+### Plot data for both years in same panel
+
+```{r}
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+plot(dates0, x0sub, pch = 20)
+abline(h = median(x0sub, na.rm = T))
+plot(dates1, x1sub, pch = 20)  ## Whoa! Different ranges
+abline(h = median(x1sub, na.rm = T))
+```
+
+### Find global range
+
+```{r}
+rng <- range(x0sub, x1sub, na.rm = T)
+rng
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+plot(dates0, x0sub, pch = 20, ylim = rng)
+abline(h = median(x0sub, na.rm = T))
+plot(dates1, x1sub, pch = 20, ylim = rng)
+abline(h = median(x1sub, na.rm = T))
+```
+
+### Show state-wide means and make a plot showing trend
+
+```{r}
+head(pm0)
+mn0 <- with(pm0, tapply(Sample.Value, State.Code, mean, na.rm = T))
+str(mn0)
+summary(mn0)
+mn1 <- with(pm1, tapply(Sample.Value, State.Code, mean, na.rm = T))
+str(mn1)
+names(mn0)
+names(mn1)
+```
+
+### Make separate data frames for states / years
+
+```{r}
+d0 <- data.frame(state = names(mn0), mean = mn0)
+d1 <- data.frame(state = names(mn1), mean = mn1)
+mrg <- merge(d0, d1, by = "state")
+dim(mrg)
+head(mrg)
+```
+
+## Connect lines
+
+```{r}
+par(mfrow = c(1, 1))
+with(mrg, plot(rep(1, 52), mrg[, 2], xlim = c(.5, 2.5)))
+with(mrg, points(rep(2, 52), mrg[, 3]))
+segments(rep(1, 52), mrg[, 2], rep(2, 52), mrg[, 3])
+```
+
+
