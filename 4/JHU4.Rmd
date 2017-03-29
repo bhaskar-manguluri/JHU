@@ -20,11 +20,13 @@ Exploratory graphing system
 ```{r}
 library(datasets)
 head(airquality)
+str(airquality)
 hist(airquality$Ozone)
 boxplot((airquality$Ozone))
 with(airquality,plot(Wind,Ozone))
 airquality = transform(airquality,Month=as.factor(Month))
 boxplot(Ozone~Month,airquality,xlab="Month",ylab="Ozone")
+boxplot(airquality$Month)
 ```
 
 
